@@ -22,7 +22,7 @@ public static partial class ServiceInitializer
         RegisterControllers(services);
         RegisterSwagger(services);
         RegisterCustomDependencies(services);
-        RegisterCors(services);
+        // RegisterCors(services);
         RegisterAutoMapper(services);
 
         return services;
