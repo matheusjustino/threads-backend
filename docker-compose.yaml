@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+#  app:
+#    container_name: app
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8080:80"
+#    environment:
+#      ASPNETCORE_ENVIRONMENT: "Production"
+#      ASPNETCORE_URLS: "http://+:80"
+#    depends_on:
+#      - db
+#    networks:
+#      - default_services_network
+
+  db:
+    container_name: "threads-database"
+    build: ./docker
+    ports:
+      - "5432:5432"
+    networks:
+      - default_services_network
+
+networks:
+  default_services_network:
+    name: shareme-services
