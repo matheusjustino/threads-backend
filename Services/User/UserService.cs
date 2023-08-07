@@ -138,6 +138,7 @@ public class UserService : IUserService
 
         var userThreads = await this._context.Threads
             .Where(t => t.AuthorId == userId)
+            .Include(t => t.Community)
             .Include(t => t.Comments)
             .ThenInclude(c => c.Author)
             .ToListAsync();

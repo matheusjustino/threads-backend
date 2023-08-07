@@ -1,10 +1,10 @@
-﻿using ThreadsBackend.DTOs.User;
-
-namespace ThreadsBackend.Services;
+﻿namespace ThreadsBackend.Services;
 
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ThreadsBackend.Data;
+using ThreadsBackend.DTOs.Community;
+using ThreadsBackend.DTOs.User;
 using ThreadsBackend.DTOs.Thread;
 using ThreadsBackend.Models;
 
@@ -57,6 +57,7 @@ public class ThreadService : IThreadService
             .Take(query.Take)
             .Where(t => t.ParentThreadId == null)
             .Include(t => t.Author)
+            .Include(t => t.Community)
             .Select(t => this._mapper.Map<ThreadDTO>(t))
             .ToListAsync();
     }
@@ -67,6 +68,7 @@ public class ThreadService : IThreadService
 
         var thread = await this._context.Threads
             .Include(t => t.Author)
+            .Include(t => t.Community)
             .Include(t => t.Comments.OrderByDescending(c => c.CreatedAt))
             .FirstOrDefaultAsync(t => t.Id == threadId);
         if (thread is null)
@@ -117,6 +119,8 @@ public class ThreadService : IThreadService
 
     public async Task<GetUserThreadsResponseDTO> GetUserThreads(string id)
     {
+        this._logger.LogInformation($"Get User Threads - id: {id}");
+
         var user = await this._context.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user is null)
         {
@@ -126,6 +130,7 @@ public class ThreadService : IThreadService
         var userThreads = await this._context.Threads
             .Where(t => t.AuthorId == user.Id)
             .Include(t => t.Author)
+            .Include(t => t.Community)
             .Include(t => t.Comments).ThenInclude(c => c.Author)
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
@@ -134,6 +139,35 @@ public class ThreadService : IThreadService
         {
             Profile = this._mapper.Map<UserDTO>(user),
             Threads = this._mapper.Map<List<ThreadDTO>>(userThreads),
+        };
+
+        return response;
+    }
+
+    public async Task<GetCommunityThreadsResponseDTO> GetCommunityThreads(string id)
+    {
+        this._logger.LogInformation($"Get Community Threads - id: {id}");
+
+        var community = await this._context.Communities
+            .Include(c => c.CreatedBy)
+            .Include(c => c.Members)
+            .FirstOrDefaultAsync(c => c.Id == id);
+        if (community is null)
+        {
+            throw new BadHttpRequestException("Community not found");
+        }
+
+        var communityThreads = await this._context.Threads
+            .Where(t => t.CommunityId == id)
+            .Include(t => t.Author)
+            // .Include(t => t.Comments).ThenInclude(c => c.Author)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+
+        var response = new GetCommunityThreadsResponseDTO
+        {
+            Profile = this._mapper.Map<CommunityDTO>(community),
+            Threads = this._mapper.Map<List<ThreadDTO>>(communityThreads),
         };
 
         return response;

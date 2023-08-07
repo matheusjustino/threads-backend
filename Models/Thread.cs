@@ -22,6 +22,8 @@ public class Thread : Entity
 
     public string? CommunityId { get; set; }
 
+    public Community? Community { get; set; }
+
     public override string ToString()
     {
         return JsonSerializer.Serialize(this);

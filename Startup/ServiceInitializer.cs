@@ -1,4 +1,6 @@
-﻿namespace ThreadsBackend.Startup;
+﻿using Newtonsoft.Json;
+
+namespace ThreadsBackend.Startup;
 
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -53,7 +55,14 @@ public static partial class ServiceInitializer
     {
         services
             .AddControllers()
-            .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            })
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
     }
 
     private static void RegisterCustomDependencies(IServiceCollection services)

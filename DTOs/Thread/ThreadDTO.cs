@@ -1,5 +1,6 @@
 ﻿namespace ThreadsBackend.DTOs.Thread;
 
+using ThreadsBackend.DTOs.Community;
 using ThreadsBackend.DTOs.User;
 
 public class ThreadDTO
@@ -17,6 +18,8 @@ public class ThreadDTO
     public List<ThreadDTO> Comments { get; set; }
 
     public string? CommunityId { get; set; }
+
+    public CommunityDTO? Community { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

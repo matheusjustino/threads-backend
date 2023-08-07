@@ -36,6 +36,13 @@ public class ThreadController : ControllerBase
         return Ok(userThreads);
     }
 
+    [HttpGet("community/{id}")]
+    public async Task<ActionResult<GetCommunityThreadsResponseDTO>> GetCommunityThreads([FromRoute] string id)
+    {
+        var communityThreads = await this._threadService.GetCommunityThreads(id);
+        return Ok(communityThreads);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<ThreadDTO>> GetThread([FromRoute] Guid id)
     {
