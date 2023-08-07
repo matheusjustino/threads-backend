@@ -22,7 +22,7 @@ public static partial class ServiceInitializer
         RegisterControllers(services);
         RegisterSwagger(services);
         RegisterCustomDependencies(services);
-        // RegisterCors(services);
+        RegisterCors(services);
         RegisterAutoMapper(services);
 
         return services;
@@ -106,7 +106,8 @@ public static partial class ServiceInitializer
 
         services.AddCors(opt => opt.AddPolicy(_policyName, policy =>
             policy
-                .WithOrigins(frontendUrl)
+                .SetIsOriginAllowed(_ => true)
+                // .WithOrigins(frontendUrl)
                 .AllowAnyHeader()
                 .AllowAnyMethod()));
     }
