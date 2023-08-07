@@ -69,7 +69,11 @@ public class UserService : IUserService
         string? filename = null;
 
         var user = await this._context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
+        var baseUrlUserImg = isDevelopment
+            ? "https://threads-backend-b8daee83f8bc.herokuapp.com/api/images/"
+            : "http://localhost:8080/api/images/";
         try
         {
             if (user is null)
@@ -77,7 +81,7 @@ public class UserService : IUserService
                 if (data.ProfilePhoto != null)
                 {
                     filename = await this._manageImageService.UploadFile(data.ProfilePhoto);
-                    filename = "http://localhost:8080/api/images/" + filename;
+                    filename = baseUrlUserImg + filename;
                 }
 
                 var newUser = new User
@@ -100,7 +104,7 @@ public class UserService : IUserService
             if (data.ProfilePhoto != null)
             {
                 filename = await this._manageImageService.UploadFile(data.ProfilePhoto);
-                filename = "http://localhost:8080/api/images/" + filename;
+                filename = baseUrlUserImg + filename;
                 this._manageImageService.DeleteImage(user.ProfilePhoto);
             }
 
