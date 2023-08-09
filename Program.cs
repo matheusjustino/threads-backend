@@ -1,4 +1,4 @@
-using ThreadsBackend.Startup;
+using ThreadsBackend.Api.Infrastructure.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
 
