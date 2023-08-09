@@ -100,10 +100,11 @@ public class CommunityService : ICommunityService
             throw new BadHttpRequestException("User not found");
         }
 
+        await this._context.Entry(community).Collection(c => c.Members).LoadAsync();
+        await this._context.Entry(user).Collection(u => u.Communities).LoadAsync();
+
         community.Members.Add(user);
         user.Communities.Add(community);
-        this._context.Communities.Update(community);
-        this._context.Users.Update(user);
         await this._context.SaveChangesAsync();
 
         return this._mapper.Map<CommunityDTO>(community);
@@ -117,7 +118,6 @@ public class CommunityService : ICommunityService
             .Where(c => c.Id == id)
             .Include(c => c.Members)
             .FirstOrDefaultAsync(c => c.Id == id);
-        Console.WriteLine(community.Members.Count);
         if (community is null)
         {
             throw new BadHttpRequestException("Community not found");

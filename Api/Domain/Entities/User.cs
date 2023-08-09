@@ -18,7 +18,7 @@ public class User : Entity
 
     public bool Onboarded { get; set; }
 
-    public List<Thread>? Threads { get; set; } = new ();
+    public List<Thread> Threads { get; set; } = new ();
 
-    public List<Community>? Communities { get; set; } = new ();
+    public List<Community> Communities { get; set; } = new ();
 }
