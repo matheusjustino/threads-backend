@@ -84,13 +84,17 @@ public class CommunityService : ICommunityService
 
     public async Task<CommunityDTO> AddMemberToCommunity(string communityId, string userId)
     {
+        this._logger.LogInformation($"Add Member To Community - communityId: {communityId} - userId: {userId}");
+
         var community = await this._context.Communities.FirstOrDefaultAsync(c => c.Id == communityId);
+        this._logger.LogInformation("Has community: {Unknown}", community != null);
         if (community is null)
         {
             throw new BadHttpRequestException("Community not found");
         }
 
         var user = await this._context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        this._logger.LogInformation("Has user: {Unknown}", user != null);
         if (user is null)
         {
             throw new BadHttpRequestException("User not found");
