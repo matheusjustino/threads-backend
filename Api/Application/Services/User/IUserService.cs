@@ -12,4 +12,6 @@ public interface IUserService
     Task<UserDTO> UpdateUser(string userId, UpdateUserDTO data);
 
     Task<List<ThreadDTO>> GetUserActivity(string userId);
+
+    Task<GetUserProfileResponseDTO> GetUserProfile(string userId, GetUserProfileQueryDTO query);
 }

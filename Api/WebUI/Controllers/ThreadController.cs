@@ -29,20 +29,6 @@ public class ThreadController : ControllerBase
         return Ok(threads);
     }
 
-    [HttpGet("user/{id}")]
-    public async Task<ActionResult<GetUserThreadsResponseDTO>> GetUserThreads([FromRoute] string id)
-    {
-        var userThreads = await this._threadService.GetUserThreads(id);
-        return Ok(userThreads);
-    }
-
-    [HttpGet("community/{id}")]
-    public async Task<ActionResult<GetCommunityThreadsResponseDTO>> GetCommunityThreads([FromRoute] string id)
-    {
-        var communityThreads = await this._threadService.GetCommunityThreads(id);
-        return Ok(communityThreads);
-    }
-
     [HttpGet("{id}")]
     public async Task<ActionResult<ThreadDTO>> GetThread([FromRoute] Guid id)
     {

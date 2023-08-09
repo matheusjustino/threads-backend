@@ -11,4 +11,6 @@ public interface ICommunityService
     Task<CommunityDTO> GetCommunity(string id);
 
     Task<CommunityDTO> AddMemberToCommunity(string communityId, string userId);
+
+    Task<GetCommunityProfileResponseDTO> GetCommunityProfile(string id, GetCommunityProfileQueryDTO query);
 }

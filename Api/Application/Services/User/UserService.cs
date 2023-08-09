@@ -1,4 +1,7 @@
-﻿namespace ThreadsBackend.Api.Application.Services;
+﻿using ThreadsBackend.Api.Domain.DTOs.Community;
+using ThreadsBackend.Api.Domain.Enums;
+
+namespace ThreadsBackend.Api.Application.Services;
 
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -146,5 +149,56 @@ public class UserService : IUserService
         var allComments = userThreads.SelectMany(t => t.Comments.Where(c => c.AuthorId != userId)).ToList();
 
         return this._mapper.Map<List<ThreadDTO>>(allComments);
+    }
+
+    public async Task<GetUserProfileResponseDTO> GetUserProfile(string userId, GetUserProfileQueryDTO query)
+    {
+        this._logger.LogInformation("Get User Profile - query: {Query}", query);
+
+        var user = await this._context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user is null)
+        {
+            throw new BadHttpRequestException("User not found");
+        }
+
+        var profileQuery = this._context.Threads
+            .Where(t => t.AuthorId == userId);
+        profileQuery = query.ProfileTab == UserProfileEnum.THREADS ?
+            profileQuery.Where(t => t.ParentThreadId == null) :
+            profileQuery.Where(t => t.ParentThreadId != null);
+
+        var threads = await profileQuery
+            .Select(t => new ThreadDTO
+            {
+                Id = t.Id,
+                Text = t.Text,
+                AuthorId = t.AuthorId,
+                Author = new UserDTO
+                {
+                    Id = t.Author.Id,
+                    Name = t.Author.Name,
+                    Username = t.Author.Username,
+                    ProfilePhoto = t.Author.ProfilePhoto,
+                },
+                ParentThreadId = t.ParentThreadId,
+                CommunityId = t.CommunityId,
+                Community = t.Community == null ? null : new CommunityDTO
+                {
+                    Id = t.Community.Id,
+                    Name = t.Community.Name,
+                    Username = t.Community.Username,
+                    Image = t.Community.Image,
+                    CreatedAt = t.Community.CreatedAt,
+                },
+                CommentsCount = t.Comments.Count,
+                CreatedAt = t.CreatedAt,
+            })
+            .ToListAsync();
+
+        return new GetUserProfileResponseDTO
+        {
+            Profile = this._mapper.Map<UserDTO>(user),
+            Threads = this._mapper.Map<List<ThreadDTO>>(threads),
+        };
     }
 }

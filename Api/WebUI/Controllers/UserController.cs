@@ -44,4 +44,11 @@ public class UserController : ControllerBase
         var user = await this._userService.GetUserActivity(id);
         return Ok(user);
     }
+
+    [HttpGet("{id}/profile")]
+    public async Task<ActionResult<GetUserProfileResponseDTO>> GetUserProfile([FromRoute] string id, [FromQuery] GetUserProfileQueryDTO query)
+    {
+        var profile = await this._userService.GetUserProfile(id, query);
+        return Ok(profile);
+    }
 }

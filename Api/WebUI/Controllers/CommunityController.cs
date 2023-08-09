@@ -36,6 +36,13 @@ public class CommunityController : ControllerBase
         return Ok(community);
     }
 
+    [HttpGet("{id}/profile")]
+    public async Task<ActionResult<GetCommunityProfileResponseDTO>> GetCommunityProfile([FromRoute] string id, [FromQuery] GetCommunityProfileQueryDTO query)
+    {
+        var communityProfile = await this._communityService.GetCommunityProfile(id, query);
+        return Ok(communityProfile);
+    }
+
     [HttpPut("{id}/add/member")]
     public async Task<ActionResult<CommunityDTO>> AddMemberToCommunity([FromRoute] string id,
         [FromBody] AddMemberToCommunity body)

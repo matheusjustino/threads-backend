@@ -2,10 +2,11 @@
 
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using ThreadsBackend.Api.Domain.Entities;
+using ThreadsBackend.Api.Domain.DTOs.Thread;
+using ThreadsBackend.Api.Domain.DTOs.User;
 using ThreadsBackend.Api.Domain.DTOs.Community;
+using ThreadsBackend.Api.Domain.Entities;
 using ThreadsBackend.Api.Infrastructure.Persistence;
-
 
 public class CommunityService : ICommunityService
 {
@@ -72,18 +73,11 @@ public class CommunityService : ICommunityService
         this._logger.LogInformation($"Get Community - id: {id}");
 
         var community = await this._context.Communities
-            // .Include(c => c.CreatedBy)
-            // .Include(c => c.Members)
-            .Include(c => c.Threads)
             .FirstOrDefaultAsync(c => c.Id == id);
         if (community is null)
         {
-            throw new BadHttpRequestException("User not found");
+            throw new BadHttpRequestException("Community not found");
         }
-
-        // await this._context.Entry(community)
-        //     .Collection(c => c.Members)
-        //     .LoadAsync();
 
         return this._mapper.Map<CommunityDTO>(community);
     }
@@ -103,9 +97,52 @@ public class CommunityService : ICommunityService
         }
 
         community.Members.Add(user);
+        user.Communities.Add(community);
         this._context.Communities.Update(community);
+        this._context.Users.Update(user);
         await this._context.SaveChangesAsync();
 
         return this._mapper.Map<CommunityDTO>(community);
+    }
+
+    public async Task<GetCommunityProfileResponseDTO> GetCommunityProfile(string id, GetCommunityProfileQueryDTO query)
+    {
+        this._logger.LogInformation("Get Community Profile - query: {Query}", query);
+
+        var community = await this._context.Communities
+            .Where(c => c.Id == id)
+            .Include(c => c.Members)
+            .FirstOrDefaultAsync(c => c.Id == id);
+        Console.WriteLine(community.Members.Count);
+        if (community is null)
+        {
+            throw new BadHttpRequestException("Community not found");
+        }
+
+        var threads = await this._context.Threads
+            .Where(t => t.CommunityId == id)
+            .Select(t => new ThreadDTO
+            {
+                Id = t.Id,
+                Text = t.Text,
+                AuthorId = t.AuthorId,
+                Author = new UserDTO
+                {
+                    Id = t.Author.Id,
+                    Name = t.Author.Name,
+                    Username = t.Author.Username,
+                    ProfilePhoto = t.Author.ProfilePhoto,
+                },
+                ParentThreadId = t.ParentThreadId,
+                CommunityId = t.CommunityId,
+                CommentsCount = t.Comments.Count,
+                CreatedAt = t.CreatedAt,
+            }).ToListAsync();
+
+        return new GetCommunityProfileResponseDTO
+        {
+            Profile = this._mapper.Map<CommunityDTO>(community),
+            Threads = this._mapper.Map<List<ThreadDTO>>(threads),
+        };
     }
 }

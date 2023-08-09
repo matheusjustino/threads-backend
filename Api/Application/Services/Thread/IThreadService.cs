@@ -11,8 +11,4 @@ public interface IThreadService
     Task<ThreadDTO> GetThread(Guid threadId);
 
     Task<ThreadDTO> AddCommentToThread(AddCommentDTO data);
-
-    Task<GetUserThreadsResponseDTO> GetUserThreads(string id);
-
-    Task<GetCommunityThreadsResponseDTO> GetCommunityThreads(string id);
 }
