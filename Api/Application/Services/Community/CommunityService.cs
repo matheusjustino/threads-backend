@@ -100,6 +100,7 @@ public class CommunityService : ICommunityService
 
         var communityMember = new CommunityMember
         {
+            Id = Guid.NewGuid().ToString(),
             Community = community,
             Member = user,
         };

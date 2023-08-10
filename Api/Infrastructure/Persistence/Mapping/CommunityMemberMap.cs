@@ -9,6 +9,9 @@ public class CommunityMemberMap : IEntityTypeConfiguration<CommunityMember>
     public void Configure(EntityTypeBuilder<CommunityMember> modelBuilder)
     {
         modelBuilder
+            .HasIndex(cm => cm.Id).IsUnique();
+
+        modelBuilder
             .HasOne(cm => cm.Community)
             .WithMany(c => c.Members)
             .HasForeignKey(cm => cm.CommunityId);

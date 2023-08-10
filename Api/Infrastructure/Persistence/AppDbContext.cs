@@ -24,6 +24,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<User>(new UserMap().Configure);
         modelBuilder.Entity<Thread>(new ThreadMap().Configure);
         modelBuilder.Entity<Community>(new CommunityMap().Configure);
+        modelBuilder.Entity<CommunityMember>(new CommunityMemberMap().Configure);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
