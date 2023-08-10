@@ -4,7 +4,8 @@ Check the [frontend here](https://github.com/matheusjustino/threads-frontend)!
 
 ## Resume
 
-    This is an application where users can register and make posts to interact with other users. In addition, it's also possible to create, participate and publish in communities.
+    This is an application where users can register and make posts to interact with other users.
+    In addition, it's also possible to create, participate and publish in communities.
 
 ## Information
 
