@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ThreadsBackend.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialDb : Migration
+    public partial class InitDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -50,28 +50,31 @@ namespace ThreadsBackend.Api.Migrations
                         column: x => x.CreatedById,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "CommunityUser",
+                name: "CommunityMembers",
                 columns: table => new
                 {
+                    Id = table.Column<string>(type: "text", nullable: false),
                     CommunityId = table.Column<string>(type: "text", nullable: false),
-                    MembersId = table.Column<string>(type: "text", nullable: false)
+                    MemberId = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CommunityUser", x => new { x.CommunityId, x.MembersId });
+                    table.PrimaryKey("PK_CommunityMembers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CommunityUser_Communities_CommunityId",
+                        name: "FK_CommunityMembers_Communities_CommunityId",
                         column: x => x.CommunityId,
                         principalTable: "Communities",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CommunityUser_Users_MembersId",
-                        column: x => x.MembersId,
+                        name: "FK_CommunityMembers_Users_MemberId",
+                        column: x => x.MemberId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -96,7 +99,8 @@ namespace ThreadsBackend.Api.Migrations
                         name: "FK_Threads_Communities_CommunityId",
                         column: x => x.CommunityId,
                         principalTable: "Communities",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Threads_Threads_ParentThreadId",
                         column: x => x.ParentThreadId,
@@ -128,9 +132,14 @@ namespace ThreadsBackend.Api.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CommunityUser_MembersId",
-                table: "CommunityUser",
-                column: "MembersId");
+                name: "IX_CommunityMembers_CommunityId",
+                table: "CommunityMembers",
+                column: "CommunityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommunityMembers_MemberId",
+                table: "CommunityMembers",
+                column: "MemberId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Threads_AuthorId",
@@ -164,7 +173,7 @@ namespace ThreadsBackend.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CommunityUser");
+                name: "CommunityMembers");
 
             migrationBuilder.DropTable(
                 name: "Threads");

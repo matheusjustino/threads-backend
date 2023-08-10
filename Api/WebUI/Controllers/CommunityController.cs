@@ -44,10 +44,18 @@ public class CommunityController : ControllerBase
     }
 
     [HttpPut("{id}/add/member")]
-    public async Task<ActionResult<CommunityDTO>> AddMemberToCommunity([FromRoute] string id,
+    public async Task<OkResult> AddMemberToCommunity([FromRoute] string id,
         [FromBody] AddMemberToCommunity body)
     {
-        var community = await this._communityService.AddMemberToCommunity(id, body.userId);
-        return Ok(community);
+        await this._communityService.AddMemberToCommunity(id, body.userId);
+        return Ok();
+    }
+
+    [HttpPut("{id}/remove/member")]
+    public async Task<OkResult> RemoveMemberFromCommunity([FromRoute] string id,
+        [FromBody] AddMemberToCommunity body)
+    {
+        await this._communityService.RemoveMemberFromCommunity(id, body.userId);
+        return Ok();
     }
 }

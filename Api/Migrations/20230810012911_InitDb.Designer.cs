@@ -12,8 +12,8 @@ using ThreadsBackend.Api.Infrastructure.Persistence;
 namespace ThreadsBackend.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230809005355_InitialDb")]
-    partial class InitialDb
+    [Migration("20230810012911_InitDb")]
+    partial class InitDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,21 +24,6 @@ namespace ThreadsBackend.Api.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("CommunityUser", b =>
-                {
-                    b.Property<string>("CommunityId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MembersId")
-                        .HasColumnType("text");
-
-                    b.HasKey("CommunityId", "MembersId");
-
-                    b.HasIndex("MembersId");
-
-                    b.ToTable("CommunityUser");
-                });
 
             modelBuilder.Entity("ThreadsBackend.Api.Domain.Entities.Community", b =>
                 {
@@ -82,6 +67,34 @@ namespace ThreadsBackend.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("Communities");
+                });
+
+            modelBuilder.Entity("ThreadsBackend.Api.Domain.Entities.CommunityMember", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CommunityId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MemberId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommunityId");
+
+                    b.HasIndex("MemberId");
+
+                    b.ToTable("CommunityMembers");
                 });
 
             modelBuilder.Entity("ThreadsBackend.Api.Domain.Entities.Thread", b =>
@@ -162,30 +175,34 @@ namespace ThreadsBackend.Api.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("CommunityUser", b =>
+            modelBuilder.Entity("ThreadsBackend.Api.Domain.Entities.Community", b =>
                 {
-                    b.HasOne("ThreadsBackend.Api.Domain.Entities.Community", null)
+                    b.HasOne("ThreadsBackend.Api.Domain.Entities.User", "CreatedBy")
                         .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("ThreadsBackend.Api.Domain.Entities.CommunityMember", b =>
+                {
+                    b.HasOne("ThreadsBackend.Api.Domain.Entities.Community", "Community")
+                        .WithMany("Members")
                         .HasForeignKey("CommunityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ThreadsBackend.Api.Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("MembersId")
+                    b.HasOne("ThreadsBackend.Api.Domain.Entities.User", "Member")
+                        .WithMany("Communities")
+                        .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
 
-            modelBuilder.Entity("ThreadsBackend.Api.Domain.Entities.Community", b =>
-                {
-                    b.HasOne("ThreadsBackend.Api.Domain.Entities.User", "CreatedBy")
-                        .WithMany("Communities")
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.Navigation("Community");
 
-                    b.Navigation("CreatedBy");
+                    b.Navigation("Member");
                 });
 
             modelBuilder.Entity("ThreadsBackend.Api.Domain.Entities.Thread", b =>
@@ -198,7 +215,8 @@ namespace ThreadsBackend.Api.Migrations
 
                     b.HasOne("ThreadsBackend.Api.Domain.Entities.Community", "Community")
                         .WithMany("Threads")
-                        .HasForeignKey("CommunityId");
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("ThreadsBackend.Api.Domain.Entities.Thread", null)
                         .WithMany("Comments")
@@ -211,6 +229,8 @@ namespace ThreadsBackend.Api.Migrations
 
             modelBuilder.Entity("ThreadsBackend.Api.Domain.Entities.Community", b =>
                 {
+                    b.Navigation("Members");
+
                     b.Navigation("Threads");
                 });
 

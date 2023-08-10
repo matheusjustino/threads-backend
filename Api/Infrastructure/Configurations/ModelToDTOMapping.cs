@@ -11,7 +11,15 @@ public class ModelToDTOMapping : Profile
     public ModelToDTOMapping()
     {
         this.CreateMap<User, UserDTO>();
-        this.CreateMap<Thread, ThreadDTO>();
-        this.CreateMap<Community, CommunityDTO>();
+            // .ForMember(dest => dest.Threads, opt => opt.Ignore())
+            // .ForMember(dest => dest.Communities, opt => opt.Ignore());
+            this.CreateMap<Thread, ThreadDTO>();
+            // .ForMember(dest => dest.Author, opt => opt.Ignore())
+            // .ForMember(dest => dest.Community, opt => opt.Ignore())
+            // .ForMember(dest => dest.Comments, opt => opt.Ignore());
+            this.CreateMap<Community, CommunityDTO>();
+            // .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            // .ForMember(dest => dest.Members, opt => opt.Ignore())
+            // .ForMember(dest => dest.Threads, opt => opt.Ignore());
     }
 }

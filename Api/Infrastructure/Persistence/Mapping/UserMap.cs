@@ -19,9 +19,9 @@ public class UserMap : IEntityTypeConfiguration<User>
             .WithOne(t => t.Author)
             .HasForeignKey(t => t.AuthorId);
 
-        modelBuilder
-            .HasMany(u => u.Communities)
-            .WithOne(c => c.CreatedBy)
-            .HasForeignKey(c => c.CreatedById);
+        // modelBuilder
+        //     .HasMany(u => u.Communities)
+        //     .WithOne(c => c.CreatedBy)
+        //     .HasForeignKey(c => c.CreatedById);
     }
 }

@@ -1,7 +1,6 @@
 ﻿namespace ThreadsBackend.Api.Domain.Entities;
 
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
 
 public class Community : Entity
 {
@@ -21,12 +20,7 @@ public class Community : Entity
     [Required]
     public User CreatedBy { get; set; }
 
-    public List<User> Members { get; set; }
+    public List<CommunityMember> Members { get; set; }
 
     public List<Thread> Threads { get; set; }
-
-    public override string ToString()
-    {
-        return JsonSerializer.Serialize(this);
-    }
 }

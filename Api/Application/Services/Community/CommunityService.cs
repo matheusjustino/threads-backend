@@ -82,32 +82,102 @@ public class CommunityService : ICommunityService
         return this._mapper.Map<CommunityDTO>(community);
     }
 
-    public async Task<CommunityDTO> AddMemberToCommunity(string communityId, string userId)
+    public async Task AddMemberToCommunity(string communityId, string userId)
     {
         this._logger.LogInformation($"Add Member To Community - communityId: {communityId} - userId: {userId}");
 
         var community = await this._context.Communities.FirstOrDefaultAsync(c => c.Id == communityId);
-        this._logger.LogInformation("Has community: {Unknown}", community != null);
         if (community is null)
         {
             throw new BadHttpRequestException("Community not found");
         }
 
         var user = await this._context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-        this._logger.LogInformation("Has user: {Unknown}", user != null);
         if (user is null)
         {
             throw new BadHttpRequestException("User not found");
         }
 
-        await this._context.Entry(community).Collection(c => c.Members).LoadAsync();
-        await this._context.Entry(user).Collection(u => u.Communities).LoadAsync();
+        var communityMember = new CommunityMember
+        {
+            Community = community,
+            Member = user,
+        };
 
-        community.Members.Add(user);
-        user.Communities.Add(community);
+        // await this._context.Entry(community).Collection(c => c.Members).LoadAsync();
+        // await this._context.Entry(user).Collection(u => u.Communities).LoadAsync();
+
+        // community.Members.Add(user);
+        // user.Communities.Add(community);
+        await this._context.AddAsync(communityMember);
         await this._context.SaveChangesAsync();
 
-        return this._mapper.Map<CommunityDTO>(community);
+        // return this._mapper.Map<CommunityDTO>(community);
+    }
+
+    // TODO: Resolver problema com a remoção de membro de comunidade
+    public async Task RemoveMemberFromCommunity(string communityId, string userId)
+    {
+        this._logger.LogInformation($"Remove Member From Community - communityId: {communityId} - userId: {userId}");
+
+        // var community = await this._context.Communities
+        //     // .Include(c => c.Members)
+        //     // .Select(c => new Community
+        //     // {
+        //     //     Id = c.Id,
+        //     //     Members = c.Members.Select(u => new User
+        //     //     {
+        //     //         Id = u.Id,
+        //     //     }).ToList(),
+        //     // })
+        //     .FirstOrDefaultAsync(c => c.Id == communityId);
+        // if (community is null)
+        // {
+        //     throw new BadHttpRequestException("Community not found");
+        // }
+        //
+        // var user = await this._context.Users
+        //     // .Include(u => u.Communities)
+        //     // .Select(u => new User
+        //     // {
+        //     //     Id = u.Id,
+        //     //     Communities = u.Communities.Select(c => new Community
+        //     //     {
+        //     //         Id = c.Id,
+        //     //         CreatedBy = c.CreatedBy,
+        //     //         CreatedById = c.CreatedById,
+        //     //     }).ToList(),
+        //     // })
+        //     .FirstOrDefaultAsync(u => u.Id == userId);
+        // if (user is null)
+        // {
+        //     throw new BadHttpRequestException("User not found");
+        // }
+        //
+        // await this._context.Entry(community)
+        //     .Collection(c => c.Members)
+        //     .LoadAsync();
+        // await this._context.Entry(user)
+        //     .Collection(u => u.Communities)
+        //     .LoadAsync();
+        //
+        // // Console.WriteLine(community.ToString());
+        // Console.WriteLine("****************************************************************************************************");
+        // Console.WriteLine("user " + user.ToString());
+        //
+        // // community.Members.Remove(user);
+        // // user.Communities.Remove(community);
+        // this._context.Update(community);
+        // this._context.Update(user);
+
+        var communityMember = await this._context.CommunityMembers
+            .Where(cm => cm.CommunityId == communityId && cm.MemberId == userId)
+            .FirstOrDefaultAsync();
+        if (communityMember != null)
+        {
+            this._context.CommunityMembers.Remove(communityMember);
+            await this._context.SaveChangesAsync();
+        }
     }
 
     public async Task<GetCommunityProfileResponseDTO> GetCommunityProfile(string id, GetCommunityProfileQueryDTO query)

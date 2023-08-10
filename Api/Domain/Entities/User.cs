@@ -20,5 +20,5 @@ public class User : Entity
 
     public List<Thread> Threads { get; set; } = new ();
 
-    public List<Community> Communities { get; set; } = new ();
+    public List<CommunityMember> Communities { get; set; } = new ();
 }

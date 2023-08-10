@@ -12,6 +12,8 @@ public class AppDbContext : DbContext
 
     public DbSet<Community> Communities { get; set; }
 
+    public DbSet<CommunityMember> CommunityMembers { get; set; }
+
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
