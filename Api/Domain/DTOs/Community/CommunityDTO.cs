@@ -1,5 +1,6 @@
 ﻿namespace ThreadsBackend.Api.Domain.DTOs.Community;
 
+using ThreadsBackend.Api.Domain.DTOs.CommunityMember;
 using ThreadsBackend.Api.Domain.DTOs.Thread;
 using ThreadsBackend.Api.Domain.DTOs.User;
 
@@ -19,7 +20,7 @@ public class CommunityDTO
 
     public UserDTO CreatedBy { get; set; }
 
-    public List<UserDTO> Members { get; set; }
+    public List<CommunityMemberDTO> Members { get; set; }
 
     public List<ThreadDTO> Threads { get; set; }
 

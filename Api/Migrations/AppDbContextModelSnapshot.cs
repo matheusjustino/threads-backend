@@ -92,6 +92,8 @@ namespace ThreadsBackend.Api.Migrations
                     b.HasIndex("Id")
                         .IsUnique();
 
+                    b.HasIndex("MemberId");
+
                     b.ToTable("CommunityMembers");
                 });
 
@@ -194,7 +196,7 @@ namespace ThreadsBackend.Api.Migrations
 
                     b.HasOne("ThreadsBackend.Api.Domain.Entities.User", "Member")
                         .WithMany("Communities")
-                        .HasForeignKey("CommunityId")
+                        .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

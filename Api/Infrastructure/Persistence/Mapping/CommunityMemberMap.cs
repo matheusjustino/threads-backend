@@ -19,6 +19,6 @@ public class CommunityMemberMap : IEntityTypeConfiguration<CommunityMember>
         modelBuilder
             .HasOne(cm => cm.Member)
             .WithMany(u => u.Communities)
-            .HasForeignKey(cm => cm.CommunityId);
+            .HasForeignKey(cm => cm.MemberId);
     }
 }

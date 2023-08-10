@@ -137,6 +137,12 @@ namespace ThreadsBackend.Api.Migrations
                 column: "CommunityId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CommunityMembers_Id",
+                table: "CommunityMembers",
+                column: "Id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CommunityMembers_MemberId",
                 table: "CommunityMembers",
                 column: "MemberId");

@@ -12,7 +12,7 @@ using ThreadsBackend.Api.Infrastructure.Persistence;
 namespace ThreadsBackend.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230810012911_InitDb")]
+    [Migration("20230810020730_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
@@ -91,6 +91,9 @@ namespace ThreadsBackend.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CommunityId");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
 
                     b.HasIndex("MemberId");
 

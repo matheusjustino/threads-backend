@@ -101,82 +101,26 @@ public class CommunityService : ICommunityService
         var communityMember = new CommunityMember
         {
             Id = Guid.NewGuid().ToString(),
+            CommunityId = communityId,
             Community = community,
+            MemberId = userId,
             Member = user,
         };
 
-        // await this._context.Entry(community).Collection(c => c.Members).LoadAsync();
-        // await this._context.Entry(user).Collection(u => u.Communities).LoadAsync();
-
-        // community.Members.Add(user);
-        // user.Communities.Add(community);
         await this._context.AddAsync(communityMember);
         await this._context.SaveChangesAsync();
-
-        // return this._mapper.Map<CommunityDTO>(community);
     }
 
-    // TODO: Resolver problema com a remoção de membro de comunidade
     public async Task RemoveMemberFromCommunity(string communityId, string userId)
     {
         this._logger.LogInformation($"Remove Member From Community - communityId: {communityId} - userId: {userId}");
 
-        // var community = await this._context.Communities
-        //     // .Include(c => c.Members)
-        //     // .Select(c => new Community
-        //     // {
-        //     //     Id = c.Id,
-        //     //     Members = c.Members.Select(u => new User
-        //     //     {
-        //     //         Id = u.Id,
-        //     //     }).ToList(),
-        //     // })
-        //     .FirstOrDefaultAsync(c => c.Id == communityId);
-        // if (community is null)
-        // {
-        //     throw new BadHttpRequestException("Community not found");
-        // }
-        //
-        // var user = await this._context.Users
-        //     // .Include(u => u.Communities)
-        //     // .Select(u => new User
-        //     // {
-        //     //     Id = u.Id,
-        //     //     Communities = u.Communities.Select(c => new Community
-        //     //     {
-        //     //         Id = c.Id,
-        //     //         CreatedBy = c.CreatedBy,
-        //     //         CreatedById = c.CreatedById,
-        //     //     }).ToList(),
-        //     // })
-        //     .FirstOrDefaultAsync(u => u.Id == userId);
-        // if (user is null)
-        // {
-        //     throw new BadHttpRequestException("User not found");
-        // }
-        //
-        // await this._context.Entry(community)
-        //     .Collection(c => c.Members)
-        //     .LoadAsync();
-        // await this._context.Entry(user)
-        //     .Collection(u => u.Communities)
-        //     .LoadAsync();
-        //
-        // // Console.WriteLine(community.ToString());
-        // Console.WriteLine("****************************************************************************************************");
-        // Console.WriteLine("user " + user.ToString());
-        //
-        // // community.Members.Remove(user);
-        // // user.Communities.Remove(community);
-        // this._context.Update(community);
-        // this._context.Update(user);
-
-        var communityMember = await this._context.CommunityMembers
-            .Where(cm => cm.CommunityId == communityId && cm.MemberId == userId)
-            .FirstOrDefaultAsync();
+        var communityMember =
+            await this._context.CommunityMembers.FirstOrDefaultAsync(cm =>
+                cm.CommunityId == communityId && cm.MemberId == userId);
         if (communityMember != null)
         {
-            this._context.CommunityMembers.Remove(communityMember);
+            this._context.Remove(communityMember);
             await this._context.SaveChangesAsync();
         }
     }
@@ -187,7 +131,30 @@ public class CommunityService : ICommunityService
 
         var community = await this._context.Communities
             .Where(c => c.Id == id)
-            .Include(c => c.Members)
+            .Select(c => new Community
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Username = c.Username,
+                Bio = c.Bio,
+                Image = c.Image,
+                Members = c.Members.Select(cm => new CommunityMember
+                {
+                    Id = cm.Id,
+                    CommunityId = cm.CommunityId,
+                    MemberId = cm.MemberId,
+                    Member = new User
+                    {
+                        Id = cm.Member.Id,
+                        Name = cm.Member.Name,
+                        Username = cm.Member.Username,
+                        ProfilePhoto = cm.Member.ProfilePhoto,
+                    },
+                }).ToList(),
+                CreatedById = c.CreatedById,
+                CreatedAt = c.CreatedAt,
+                UpdatedAt = c.UpdatedAt,
+            })
             .FirstOrDefaultAsync(c => c.Id == id);
         if (community is null)
         {
