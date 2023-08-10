@@ -7,4 +7,6 @@ public class GetUserProfileResponseDTO
     public UserDTO Profile { get; set; }
 
     public List<ThreadDTO> Threads { get; set; }
+
+    public List<ThreadDTO> Replies { get; set; }
 }

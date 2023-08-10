@@ -43,8 +43,6 @@ public static partial class ServiceInitializer
                 options.UseNpgsql(connectionString);
                 options.EnableSensitiveDataLogging();
                 options.EnableDetailedErrors();
-                // options.UseLoggerFactory(LoggerFactory.Create(builder =>
-                //     builder.AddConsole().SetMinimumLevel(LogLevel.Warning)));
                 options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
             },
             ServiceLifetime.Transient);

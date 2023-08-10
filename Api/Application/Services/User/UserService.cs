@@ -1,13 +1,11 @@
-﻿using ThreadsBackend.Api.Domain.DTOs.Community;
-using ThreadsBackend.Api.Domain.Enums;
-
-namespace ThreadsBackend.Api.Application.Services;
+﻿namespace ThreadsBackend.Api.Application.Services;
 
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using ThreadsBackend.Api.Application.Services;
+using ThreadsBackend.Api.Domain.DTOs.Community;
 using ThreadsBackend.Api.Domain.DTOs.Thread;
 using ThreadsBackend.Api.Domain.DTOs.User;
+using ThreadsBackend.Api.Domain.Enums;
 using ThreadsBackend.Api.Domain.Entities;
 using ThreadsBackend.Api.Infrastructure.Persistence;
 
@@ -21,16 +19,20 @@ public class UserService : IUserService
 
     private readonly IManageImageService _manageImageService;
 
+    private readonly IServiceProvider _serviceProvider;
+
     public UserService(
         ILogger<UserService> logger,
         AppDbContext context,
         IMapper mapper,
-        IManageImageService manageImageService)
+        IManageImageService manageImageService,
+        IServiceProvider serviceProvider)
     {
         this._logger = logger;
         this._context = context;
         this._mapper = mapper;
         this._manageImageService = manageImageService;
+        this._serviceProvider = serviceProvider;
     }
 
     public async Task<List<UserDTO>> ListUsers(ListUsersQueryDTO query)
@@ -41,7 +43,9 @@ public class UserService : IUserService
             .Where(u => u.Id != query.UserId);
         if (!string.IsNullOrEmpty(query.SearchTerm))
         {
-            usersQuery = usersQuery.Where(u => u.Name.Contains(query.SearchTerm));
+            usersQuery = usersQuery.Where(u =>
+                u.Name.ToLower().Contains(query.SearchTerm.ToLower()) ||
+                u.Username.ToLower().Contains(query.SearchTerm.ToLower()));
         }
 
         var users = await usersQuery
@@ -53,9 +57,9 @@ public class UserService : IUserService
         return users;
     }
 
-    public async Task<UserDTO> GetUser(string userId)
+    public async Task<UserDTO> GetUser(string id)
     {
-        var user = await this._context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await this._context.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user is null)
         {
             throw new BadHttpRequestException("User not found");
@@ -161,13 +165,12 @@ public class UserService : IUserService
             throw new BadHttpRequestException("User not found");
         }
 
-        var profileQuery = this._context.Threads
-            .Where(t => t.AuthorId == userId);
-        profileQuery = query.ProfileTab == UserProfileEnum.THREADS ?
-            profileQuery.Where(t => t.ParentThreadId == null) :
-            profileQuery.Where(t => t.ParentThreadId != null);
+        var threadsContext = this._serviceProvider.GetService<AppDbContext>();
+        var repliesContext = this._serviceProvider.GetService<AppDbContext>();
 
-        var threads = await profileQuery
+        var threadsTask = threadsContext.Threads
+            .Where(t => t.AuthorId == userId)
+            .Where(t => t.ParentThreadId == null)
             .Select(t => new ThreadDTO
             {
                 Id = t.Id,
@@ -182,23 +185,77 @@ public class UserService : IUserService
                 },
                 ParentThreadId = t.ParentThreadId,
                 CommunityId = t.CommunityId,
-                Community = t.Community == null ? null : new CommunityDTO
-                {
-                    Id = t.Community.Id,
-                    Name = t.Community.Name,
-                    Username = t.Community.Username,
-                    Image = t.Community.Image,
-                    CreatedAt = t.Community.CreatedAt,
-                },
+                Community = t.Community == null
+                    ? null
+                    : new CommunityDTO
+                    {
+                        Id = t.Community.Id,
+                        Name = t.Community.Name,
+                        Username = t.Community.Username,
+                        Image = t.Community.Image,
+                        CreatedAt = t.Community.CreatedAt,
+                    },
                 CommentsCount = t.Comments.Count,
                 CreatedAt = t.CreatedAt,
-            })
-            .ToListAsync();
+            }).ToListAsync();
+        var repliesTask = repliesContext.Threads
+            .Where(t => t.AuthorId == userId)
+            .Where(t => t.ParentThreadId != null)
+            .Select(t => new ThreadDTO
+            {
+                Id = t.Id,
+                Text = t.Text,
+                AuthorId = t.AuthorId,
+                Author = new UserDTO
+                {
+                    Id = t.Author.Id,
+                    Name = t.Author.Name,
+                    Username = t.Author.Username,
+                    ProfilePhoto = t.Author.ProfilePhoto,
+                },
+                ParentThreadId = t.ParentThreadId,
+                CommunityId = t.CommunityId,
+                Community = t.Community == null
+                    ? null
+                    : new CommunityDTO
+                    {
+                        Id = t.Community.Id,
+                        Name = t.Community.Name,
+                        Username = t.Community.Username,
+                        Image = t.Community.Image,
+                        CreatedAt = t.Community.CreatedAt,
+                    },
+                CommentsCount = t.Comments.Count,
+                CreatedAt = t.CreatedAt,
+            }).ToListAsync();
+        await Task.WhenAll(threadsTask, repliesTask);
 
         return new GetUserProfileResponseDTO
         {
             Profile = this._mapper.Map<UserDTO>(user),
-            Threads = this._mapper.Map<List<ThreadDTO>>(threads),
+            Threads = this._mapper.Map<List<ThreadDTO>>(threadsTask.Result),
+            Replies = this._mapper.Map<List<ThreadDTO>>(repliesTask.Result),
         };
+    }
+
+    public async Task<List<UserDTO>> GetSuggestUsers(GetSuggestUsersQueryDTO query)
+    {
+        this._logger.LogInformation($"Get Suggest Users - query: {query.ToString()}");
+
+        if (query.Count is 0)
+        {
+            return new List<UserDTO>();
+        }
+
+        var random = new Random();
+        var userIds = await this._context.Users.Select(user => user.Id).ToListAsync();
+        var shuffledUserIds = userIds.OrderBy(_ => random.Next()).ToList();
+
+        var randomUsers = await this._context.Users
+            .Where(user => shuffledUserIds.Contains(user.Id))
+            .Take(query.Count ?? 4)
+            .ToListAsync();
+
+        return this._mapper.Map<List<UserDTO>>(randomUsers);
     }
 }

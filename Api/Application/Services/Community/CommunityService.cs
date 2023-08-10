@@ -60,26 +60,14 @@ public class CommunityService : ICommunityService
             .Take(query.Take);
         if (!string.IsNullOrEmpty(query.SearchTerm))
         {
-            listCommunitiesQuery = listCommunitiesQuery.Where(c => c.Name.Contains(query.SearchTerm));
+            listCommunitiesQuery = listCommunitiesQuery.Where(c =>
+                c.Name.ToLower().Contains(query.SearchTerm.ToLower()) ||
+                c.Username.ToLower().Contains(query.SearchTerm.ToLower()));
         }
 
         return await listCommunitiesQuery
             .Select(c => this._mapper.Map<CommunityDTO>(c))
             .ToListAsync();
-    }
-
-    public async Task<CommunityDTO> GetCommunity(string id)
-    {
-        this._logger.LogInformation($"Get Community - id: {id}");
-
-        var community = await this._context.Communities
-            .FirstOrDefaultAsync(c => c.Id == id);
-        if (community is null)
-        {
-            throw new BadHttpRequestException("Community not found");
-        }
-
-        return this._mapper.Map<CommunityDTO>(community);
     }
 
     public async Task AddMemberToCommunity(string communityId, string userId)
@@ -186,5 +174,26 @@ public class CommunityService : ICommunityService
             Profile = this._mapper.Map<CommunityDTO>(community),
             Threads = this._mapper.Map<List<ThreadDTO>>(threads),
         };
+    }
+
+    public async Task<List<CommunityDTO>> GetSuggestCommunities(GetSuggestCommunitiesQueryDTO query)
+    {
+        this._logger.LogInformation($"Get Suggest Communities - query: {query.ToString()}");
+
+        if (query.Count is 0)
+        {
+            return new List<CommunityDTO>();
+        }
+
+        var random = new Random();
+        var communitiesIds = await this._context.Communities.Select(c => c.Id).ToListAsync();
+        var shuffledCommunitiesIds = communitiesIds.OrderBy(_ => random.Next()).ToList();
+
+        var randomCommunities = await this._context.Communities
+            .Where(c => shuffledCommunitiesIds.Contains(c.Id))
+            .Take(query.Count ?? 4)
+            .ToListAsync();
+
+        return this._mapper.Map<List<CommunityDTO>>(randomCommunities);
     }
 }

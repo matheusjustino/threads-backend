@@ -51,4 +51,11 @@ public class UserController : ControllerBase
         var profile = await this._userService.GetUserProfile(id, query);
         return Ok(profile);
     }
+
+    [HttpGet("suggest")]
+    public async Task<ActionResult<List<UserDTO>>> GetSuggestUsers([FromQuery] GetSuggestUsersQueryDTO query)
+    {
+        var users = await this._userService.GetSuggestUsers(query);
+        return Ok(users);
+    }
 }

@@ -8,11 +8,11 @@ public interface ICommunityService
 
     Task<List<CommunityDTO>> ListCommunities(ListCommunitiesQueryDTO query);
 
-    Task<CommunityDTO> GetCommunity(string id);
-
     Task AddMemberToCommunity(string communityId, string userId);
 
     Task RemoveMemberFromCommunity(string communityId, string userId);
 
     Task<GetCommunityProfileResponseDTO> GetCommunityProfile(string id, GetCommunityProfileQueryDTO query);
+
+    Task<List<CommunityDTO>> GetSuggestCommunities(GetSuggestCommunitiesQueryDTO query);
 }

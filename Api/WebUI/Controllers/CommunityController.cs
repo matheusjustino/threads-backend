@@ -23,17 +23,10 @@ public class CommunityController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<CommunityDTO>>> GetCommunity([FromQuery] ListCommunitiesQueryDTO query)
+    public async Task<ActionResult<List<CommunityDTO>>> ListCommunities([FromQuery] ListCommunitiesQueryDTO query)
     {
         var communities = await this._communityService.ListCommunities(query);
         return Ok(communities);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<CommunityDTO>> GetCommunity([FromRoute] string id)
-    {
-        var community = await this._communityService.GetCommunity(id);
-        return Ok(community);
     }
 
     [HttpGet("{id}/profile")]
@@ -57,5 +50,12 @@ public class CommunityController : ControllerBase
     {
         await this._communityService.RemoveMemberFromCommunity(id, body.userId);
         return Ok();
+    }
+
+    [HttpGet("suggest")]
+    public async Task<ActionResult<List<CommunityDTO>>> GetSuggestCommunities([FromQuery] GetSuggestCommunitiesQueryDTO query)
+    {
+        var communities = await this._communityService.GetSuggestCommunities(query);
+        return Ok(communities);
     }
 }
